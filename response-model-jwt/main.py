@@ -4,7 +4,6 @@ import model,schemas
 from sqlalchemy.orm import Session
 #Import User Router
 from user_route import router
-import auth
 app = FastAPI()
 Base.metadata.create_all(bind = engine)
 #Include User Router
