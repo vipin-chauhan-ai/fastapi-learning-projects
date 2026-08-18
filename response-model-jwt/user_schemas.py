@@ -6,4 +6,7 @@ class CreateUser(BaseModel):
     password:str = Field(...,min_length=5,max_length=30)
     age:int = Field(...,ge=18,le=60)
     course:str = Field(...,min_length=5,max_length=30)
- 
+class UserLogin(BaseModel):
+    email:EmailStr
+    password:str
+    

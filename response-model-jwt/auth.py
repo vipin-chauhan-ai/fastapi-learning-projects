@@ -29,7 +29,6 @@ def hash_password(password:str):
 def verify_password(plain_password:str,hashed_password:str):
     return pwd_context.verify(plain_password,hashed_password)
 
-# Create Access TOKEN
 def create_access_token(data:dict):
     to_encoded = data.copy()
     expire = datetime.utcnow()+timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -41,4 +40,5 @@ def create_access_token(data:dict):
         algorithm=ALGORITHM
     )
     return encoded_jwt
- 
+
+

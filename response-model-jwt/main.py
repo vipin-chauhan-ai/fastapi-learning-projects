@@ -2,17 +2,23 @@ from fastapi import FastAPI,Depends,HTTPException
 from database import engine,Base,SessionLocal
 import model,schemas
 from sqlalchemy.orm import Session
+#Import User Router
 from user_route import router
-
+import auth
 app = FastAPI()
 Base.metadata.create_all(bind = engine)
+#Include User Router
 app.include_router(router)
+
+
 def db_get():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+        
+# Post Student Data
 
 @app.post("/student",response_model=schemas.StudentResponse)
 def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
@@ -35,7 +41,7 @@ def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
     }
     }
     
-   
+ # Get Student Data From Database  
 
 @app.get("/student")
 def get_student(db:Session=Depends(db_get)):
@@ -48,14 +54,10 @@ def get_student(db:Session=Depends(db_get)):
                              )
     return{
         "message" :"Student info",
-        # "student" : {
-        #              "Name" : students.name,
-        #              "Course" : students.course,
-        #              }
-        "students" :students
+         "students" :students
     } 
     
-
+# Update Student Data 
 @app.put("/student/{id}")
 def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_get)):
     students = db.query(model.Student).filter(model.Student.id==id).first()
@@ -74,23 +76,19 @@ def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_ge
             "course":students.course,
             "age" :students.age
         }
-    }        
+    }    
+    
+#Delete Student Data        
 @app.delete("/student/{id}")
 def delete_student(
     id: int,
     db: Session = Depends(db_get)
 ):
-    
-    
+
+             
     students = db.query(model.Student).filter(
         model.Student.id == id
     ).first()
-
-    if students is None:
-        raise HTTPException(
-            status_code=404,
-            detail="student not found"
-        )
 
     db.delete(students)
     db.commit()
