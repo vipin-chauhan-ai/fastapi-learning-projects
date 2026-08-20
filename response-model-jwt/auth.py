@@ -3,7 +3,6 @@ from passlib.context import CryptContext
 from jose import JWTError,jwt,ExpiredSignatureError
 from datetime import datetime,timedelta
 
-from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -40,5 +39,4 @@ def create_access_token(data:dict):
         algorithm=ALGORITHM
     )
     return encoded_jwt
-
 

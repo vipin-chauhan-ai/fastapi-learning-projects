@@ -42,17 +42,17 @@ def user_registration(user:CreateUser,db:Session=Depends(db_get)):
     }
 #Loging APi    
 @router.post("/login")
-def user_login(user:UserLogin=Depends(),db:Session=Depends(db_get)):
+def user_login(user:UserLogin,db:Session=Depends(db_get)):
     existing_user = db.query(User).filter(User.email == user.email).first()
     if not existing_user:
         raise HTTPException(
             status_code =400,
             detail = "Invalid Email Or Password"
         )
-    #Verify Password with auth    
     verify_password =   auth.verify_password(user.password , existing_user.password)  
-    #access token from auth
-    access_token = auth.create_access_token(data={"sub":existing_user.email})
+    #access token
+    access_token = auth.create_access_token(data={"sub":existing_user.email,"type":"access"})
+     
     
     if not verify_password:
             raise HTTPException(
@@ -66,7 +66,7 @@ def user_login(user:UserLogin=Depends(),db:Session=Depends(db_get)):
         "email" :existing_user.email,
         "access_token":access_token,
         "token_type" :"bearer", 
-        
+      
     
     }       
     

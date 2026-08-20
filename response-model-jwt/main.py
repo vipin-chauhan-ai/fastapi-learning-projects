@@ -4,6 +4,7 @@ import model,schemas
 from sqlalchemy.orm import Session
 #Import User Router
 from user_route import router
+
 app = FastAPI()
 Base.metadata.create_all(bind = engine)
 #Include User Router
@@ -53,7 +54,11 @@ def get_student(db:Session=Depends(db_get)):
                              )
     return{
         "message" :"Student info",
-         "students" :students
+        # "student" : {
+        #              "Name" : students.name,
+        #              "Course" : students.course,
+        #              }
+        "students" :students
     } 
     
 # Update Student Data 
@@ -81,7 +86,7 @@ def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_ge
 @app.delete("/student/{id}")
 def delete_student(
     id: int,
-    db: Session = Depends(db_get)
+   db: Session = Depends(db_get)
 ):
 
              
