@@ -1,24 +1,47 @@
-# FastAPI JWT Authentication Project
+# FastAPI JWT Authentication with OAuth2
 
-A practical FastAPI project demonstrating User Registration, Login, Password Hashing, JWT Authentication, Protected Routes, SQLAlchemy and SQLite.
+A practical FastAPI authentication project demonstrating User Registration, Login, JWT Access Token generation, OAuth2 Login and Get User Profile API.
 
 This project is part of my **FastAPI Hindi Tutorial Series**.
 
-## 🚀 Features
+## ✅ Features Completed
 
 - User Model using SQLAlchemy
+- Request validation using Pydantic
 - User Registration API
-- Duplicate Email Validation
-- Secure Password Hashing
-- User Login API
-- JWT Access Token Generation
-- OAuth2 Password Bearer Authentication
-- Get Current Logged-in User
-- Protected API Routes
-- Pydantic Request and Response Schemas
-- SQLite Database Integration
-- Student CRUD APIs
-- Swagger UI Testing
+- Duplicate email validation
+- Password hashing using Passlib and Bcrypt
+- User Login with email and password
+- JWT Access Token generation
+- JWT token expiry
+- OAuth2 Login using `OAuth2PasswordRequestForm`
+- Token extraction using `OAuth2PasswordBearer`
+- JWT token decoding and validation
+- Get current logged-in user
+- Get User Profile API
+- Swagger UI authentication testing
+
+## 🔐 Authentication Flow
+
+```text
+User Registration
+        ↓
+Password Hashing
+        ↓
+User Saved in SQLite Database
+        ↓
+OAuth2 Login with Username and Password
+        ↓
+JWT Access Token Generated
+        ↓
+Token Sent Through Authorization Header
+        ↓
+JWT Token Decoded and Validated
+        ↓
+Current User Email Retrieved
+        ↓
+User Profile Returned
+```
 
 ## 📁 Project Structure
 
@@ -33,21 +56,22 @@ response-model-jwt/
 ├── user_model.py
 ├── user_route.py
 ├── user_schemas.py
+├── .gitignore
 └── README.md
 ```
 
-## 📄 File Details
+## 📄 File Description
 
 | File | Purpose |
 |---|---|
-| `main.py` | Main FastAPI application and routes |
-| `database.py` | Database engine, session and Base configuration |
-| `model.py` | Student SQLAlchemy database model |
+| `main.py` | Main FastAPI application and router configuration |
+| `database.py` | SQLAlchemy database engine, session and Base configuration |
+| `model.py` | Student SQLAlchemy model |
 | `schemas.py` | Student Pydantic schemas |
 | `user_model.py` | User SQLAlchemy database model |
 | `user_schemas.py` | User registration, login and response schemas |
-| `user_route.py` | User registration and login API routes |
-| `auth.py` | Password hashing, JWT token and current-user authentication |
+| `user_route.py` | Registration, OAuth2 Login and Profile API routes |
+| `auth.py` | Password hashing, JWT generation, OAuth2 scheme and token validation |
 
 ## 🛠️ Technologies Used
 
@@ -56,7 +80,7 @@ response-model-jwt/
 - SQLAlchemy
 - Pydantic
 - SQLite
-- JWT Authentication
+- JWT
 - OAuth2
 - Passlib
 - Bcrypt
@@ -77,13 +101,13 @@ git clone https://github.com/vipin-chauhan-ai/fastapi-learning-projects.git
 cd fastapi-learning-projects/response-model-jwt
 ```
 
-### 3. Create virtual environment
+### 3. Create a virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-### 4. Activate virtual environment
+### 4. Activate the virtual environment
 
 Windows:
 
@@ -103,63 +127,87 @@ source venv/bin/activate
 pip install fastapi uvicorn sqlalchemy pydantic "passlib[bcrypt]" "python-jose[cryptography]" python-multipart
 ```
 
-### 6. Run the FastAPI server
+### 6. Run the FastAPI application
 
 ```bash
 uvicorn main:app --reload
 ```
 
-## 📌 API Documentation
+## 📌 Swagger UI
 
-After running the server, open Swagger UI:
+Open the following URL after starting the server:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-## 🔐 Authentication Flow
+## 🔑 OAuth2 Login Process
 
-```text
-User Registration
-       ↓
-Password Hashing
-       ↓
-User Saved in Database
-       ↓
-Login with Email and Password
-       ↓
-JWT Access Token Generated
-       ↓
-Token Verified
-       ↓
-Current User Accesses Protected API
+1. Register a new user.
+2. Open the OAuth2 Login API.
+3. Enter the registered email in the `username` field.
+4. Enter the user password.
+5. Execute the Login API.
+6. Copy the generated JWT Access Token.
+7. Use the token to access the Get User Profile API.
+
+## 🧩 JWT Access Token
+
+The JWT token contains the user's email in the `sub` claim:
+
+```python
+{
+    "sub": "user@example.com",
+    "type": "access",
+    "exp": "token-expiration-time"
+}
 ```
 
-## 🎥 FastAPI Hindi Video Tutorials
+The token is digitally signed using:
+
+```python
+SECRET_KEY
+ALGORITHM
+```
+
+## 👤 Get Current User
+
+The `get_current_user()` dependency:
+
+- Receives the JWT token using `OAuth2PasswordBearer`
+- Decodes the token
+- Reads the user email from the `sub` claim
+- Returns `401 Unauthorized` for an invalid token
+- Provides the authenticated user to the Profile API
+
+## 🎥 FastAPI Hindi Tutorial Series
 
 ### User Model, Pydantic Schema and APIRouter
 
-https://www.youtube.com/playlist?list=PLQmLgnwT9Bvg 
+https://youtu.be/R1u4cGOJZUY
 
 ### User Registration API
 
 https://youtu.be/Avp8W_JpJeA
 
-### Login API with JWT Access Token
+### Complete FastAPI Hindi Playlist
 
-Add login video link here.
+https://www.youtube.com/watch?v=ZdXddDsXl2o&list=PLQmLgnwT9Bvg
 
-## 📂 Complete FastAPI Projects
+## 📚 JWT Authentication Notes
+
+https://vipin-chauhan-ai.github.io/vipin-ai-notes/jwt-authentication-questions-%20partical
+
+## 💻 Complete Repository
 
 https://github.com/vipin-chauhan-ai/fastapi-learning-projects
 
-## 📝 AI Developer Notes
+## ⏭️ Upcoming
 
-https://github.com/vipin-chauhan-ai/vipin-ai-notes
-
-## 📺 YouTube Channel
-
-https://www.youtube.com/@vipin-ai-v3u
+- Test protected APIs in Postman
+- Send JSON data with JWT Bearer Token
+- Role-Based Access Control
+- Admin and User permissions
 
 ## 👨‍💻 Author
 
@@ -169,4 +217,4 @@ Python & FastAPI Developer | Building GenAI, RAG and Agentic AI Applications | H
 
 ## ⭐ Support
 
-If this project is helpful, please give the repository a ⭐ and subscribe to the YouTube channel for complete FastAPI Hindi tutorials.
+If this project is helpful, please give the repository a star and subscribe to the YouTube channel for more practical FastAPI Hindi tutorials.

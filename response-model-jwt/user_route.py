@@ -14,7 +14,6 @@ def db_get():
         yield db
     finally:
         db.close()
-#USer regisration        
 @router.post("/registration")
 def user_registration(user:CreateUser,db:Session=Depends(db_get)):
     email_exist = db.query(User).filter(User.email == user.email).first()
@@ -29,8 +28,7 @@ def user_registration(user:CreateUser,db:Session=Depends(db_get)):
         email = user.email,
         password = has_pass,
         age = user.age,
-        course = user.course,
-        role="user"
+        course = user.course
     )
     db.add(new_user)
     db.commit()
@@ -42,8 +40,8 @@ def user_registration(user:CreateUser,db:Session=Depends(db_get)):
     }
 #Loging APi    
 @router.post("/login")
-def user_login(user:UserLogin,db:Session=Depends(db_get)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
+def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_get)):
+    existing_user = db.query(User).filter(User.email == user.username).first()
     if not existing_user:
         raise HTTPException(
             status_code =400,
@@ -51,8 +49,7 @@ def user_login(user:UserLogin,db:Session=Depends(db_get)):
         )
     verify_password =   auth.verify_password(user.password , existing_user.password)  
     #access token
-    access_token = auth.create_access_token(data={"sub":existing_user.email,"type":"access"})
-     
+    access_token = auth.create_access_token(data={"sub":existing_user.email})
     
     if not verify_password:
             raise HTTPException(
@@ -65,8 +62,11 @@ def user_login(user:UserLogin,db:Session=Depends(db_get)):
         "id" : existing_user.id,
         "email" :existing_user.email,
         "access_token":access_token,
-        "token_type" :"bearer", 
-      
-    
+        "token_type" :"bearer"
     }       
-    
+  # get curent profile  
+@router.get("/profile")
+def profile(curent_user:str= Depends(auth.get_curent_user)):
+    return {
+        "curent_user" :curent_user 
+    }
