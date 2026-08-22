@@ -5,7 +5,6 @@ from user_model import User
 from sqlalchemy.orm import Session
 import auth
 
-from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 def db_get():
@@ -40,8 +39,8 @@ def user_registration(user:CreateUser,db:Session=Depends(db_get)):
     }
 #Loging APi    
 @router.post("/login")
-def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_get)):
-    existing_user = db.query(User).filter(User.email == user.username).first()
+def user_login(user:UserLogin,db:Session=Depends(db_get)):
+    existing_user = db.query(User).filter(User.email == user.email).first()
     if not existing_user:
         raise HTTPException(
             status_code =400,
@@ -49,14 +48,16 @@ def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_ge
         )
     verify_password =   auth.verify_password(user.password , existing_user.password)  
     #access token
-    access_token = auth.create_access_token(data={"sub":existing_user.email})
     
     if not verify_password:
             raise HTTPException(
                 status_code =400,
                 detail = "Invalid Email Or Password"
             )
-  
+    # Access token — verify ke baad
+    access_token = auth.create_access_token(
+        data={"sub": existing_user.email}
+    )
     return {
         "Message" : "User Login Successfully",
         "id" : existing_user.id,
