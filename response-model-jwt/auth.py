@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 
-from jose import JWTError,jwt
+from jose import JWTError,jwt,ExpiredSignatureError
 from datetime import datetime,timedelta
 
 from fastapi import Depends, HTTPException
@@ -12,7 +12,7 @@ SECRET_KEY = "my-sec-key"
 
 ALGORITHM = "HS256"
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 
+ACCESS_TOKEN_EXPIRE_MINUTES = 1 
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/login"
@@ -51,8 +51,13 @@ def get_curent_user(token:str=Depends(oauth2_scheme)):
                 detail = "Invalid Token"
             )
         return email
-    except JWTError:
-        raise HTTPException(
-            status_code = 401,
-            detail = "Could not validate credintial"
-        )    
+    except ExpiredSignatureError: #CHILD
+                raise HTTPException(
+                    status_code = 401,
+                    detail = "Token has expired"
+                )    
+    except JWTError: # PARENT
+                raise HTTPException(
+                    status_code = 401,
+                    detail = "Could not validate credintial"
+                )        
