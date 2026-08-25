@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,HTTPException
 from database import SessionLocal
-from user_schemas import CreateUser,UserLogin
+from user_schemas import CreateUser,UserLogin,RefreshTokenRequest
 from user_model import User
 from sqlalchemy.orm import Session
 import auth
@@ -14,7 +14,6 @@ def db_get():
         yield db
     finally:
         db.close()
-#REGISTRATION API        
 @router.post("/registration")
 def user_registration(user:CreateUser,db:Session=Depends(db_get)):
     email_exist = db.query(User).filter(User.email == user.email).first()
@@ -50,8 +49,8 @@ def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_ge
         )
     verify_password =   auth.verify_password(user.password , existing_user.password)  
     #access token
-    access_token = auth.create_access_token(data={"sub":existing_user.email})
-    
+    access_token = auth.create_access_token(data={"sub":existing_user.email,"type": "access"})
+    refresh_token =auth.create_refresh_token(data={"sub":existing_user.email,"type": "refresh"})
     if not verify_password:
             raise HTTPException(
                 status_code =400,
@@ -63,11 +62,36 @@ def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_ge
         "id" : existing_user.id,
         "email" :existing_user.email,
         "access_token":access_token,
+        "refresh_token" :refresh_token,
         "token_type" :"bearer"
     }       
-  # get curent profile  
+  
+#GET Profile    
 @router.get("/profile")
-def profile(curent_user:str= Depends(auth.get_curent_user)):
+def profile(curent_user:str= Depends(auth.get_curent_user),):
     return {
-        "curent_user" :curent_user 
+        "curent_user" :curent_user
+    }
+    
+# GET refresh Token    
+@router.post("/refresh")
+def refresh_token(
+    request: RefreshTokenRequest
+):
+    email = auth.verify_token(
+        request.refresh_token,
+        "refresh"
+    )
+
+    new_access_token = auth.create_access_token(
+        data={
+            "sub": email,
+            "type": "access"
+        }
+    )
+
+    return {
+        "message": "New Access Token Generated",
+        "access_token": new_access_token,
+        "token_type": "bearer"
     }

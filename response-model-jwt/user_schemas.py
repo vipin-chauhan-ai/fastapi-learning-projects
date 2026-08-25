@@ -9,4 +9,7 @@ class CreateUser(BaseModel):
 class UserLogin(BaseModel):
     email:EmailStr
     password:str
-     
+    
+    #it will implement
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str         
