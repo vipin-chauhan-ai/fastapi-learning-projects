@@ -49,7 +49,7 @@ def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_ge
         )
     verify_password =   auth.verify_password(user.password , existing_user.password)  
     #access token
-    access_token = auth.create_access_token(data={"sub":existing_user.email,"type": "access"})
+    access_token = auth.create_access_token(data={"sub":existing_user.email,"type": "access","role":existing_user.role})
     refresh_token =auth.create_refresh_token(data={"sub":existing_user.email,"type": "refresh"})
     if not verify_password:
             raise HTTPException(
@@ -63,6 +63,7 @@ def user_login(user:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(db_ge
         "email" :existing_user.email,
         "access_token":access_token,
         "refresh_token" :refresh_token,
+        'role' : existing_user.role,
         "token_type" :"bearer"
     }       
   

@@ -73,7 +73,8 @@ def verify_token(token: str, expected_type: str):
             status_code=401,
             detail="Invalid Token Type"
          )
-        return email
+        return { "email": email,
+                 "role": payload.get("role") } 
          
     except ExpiredSignatureError:  #CHILD
         raise HTTPException(

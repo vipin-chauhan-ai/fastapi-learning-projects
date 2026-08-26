@@ -3,8 +3,10 @@ from database import engine,Base,SessionLocal
 import model,schemas
 from sqlalchemy.orm import Session
 #Import User Router
-from user_route import router
 
+from user_route import router
+#import auth
+import auth
 app = FastAPI()
 Base.metadata.create_all(bind = engine)
 #Include User Router
@@ -85,10 +87,15 @@ def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_ge
 #Delete Student Data        
 @app.delete("/student/{id}")
 def delete_student(
-    id: int,
+    id: int, curent_user:  dict = Depends(auth.get_curent_user),
    db: Session = Depends(db_get)
 ):
-
+    # condtion check for curent user role
+    if curent_user["role"] != "user":
+            raise HTTPException(
+                status_code=403,
+                detail="Access Denied"
+            )
              
     students = db.query(model.Student).filter(
         model.Student.id == id

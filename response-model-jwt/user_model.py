@@ -8,3 +8,4 @@ class User(Base):
     password = Column(String)
     age = Column(Integer)
     course = Column(String)  
+    role = Column(String(20), default="user")
