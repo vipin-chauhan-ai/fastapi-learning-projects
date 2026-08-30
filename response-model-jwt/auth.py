@@ -51,7 +51,7 @@ def create_refresh_token(data:dict):
         algorithm=ALGORITHM
     )
     return refresh_encoded_jwt
-
+#verify TOKEN
 def verify_token(token: str, expected_type: str):
     try:
         payload =jwt.decode(
@@ -87,32 +87,7 @@ def verify_token(token: str, expected_type: str):
             detail = "Could not validate credintial"
         )    
 
-
-# def get_curent_user(token:str=Depends(oauth2_scheme)):
-#     try:
-#         payload =jwt.decode(
-#             token,
-#             SECRET_KEY,
-#             algorithms=[ALGORITHM]
-#         )
-#         email =payload.get("sub")
-#         if email is None:
-#             raise HTTPException(
-#                 status_code = 401,
-#                 detail = "Invalid Token",
-                
-#             )
-#         return email
-#     except ExpiredSignatureError:
-#         raise HTTPException(
-#             status_code = 401,
-#             detail = "Token has expired"
-#         )    
-#     except JWTError:
-#         raise HTTPException(
-#             status_code = 401,
-#             detail = "Could not validate credintial"
-#         )    
+# GET USER PROFILE 
 
 def get_curent_user(
     token: str = Depends(oauth2_scheme)
@@ -121,3 +96,13 @@ def get_curent_user(
         token,
         "access"
     )
+
+
+# comman function for check role
+def require_admin(curent_user:dict = Depends(get_curent_user)):
+        if curent_user['role'] != "admin":
+             raise HTTPException(
+                        status_code=404,
+                        detail="Access Denied! You are not authorized"
+                    )
+        return curent_user  

@@ -87,16 +87,10 @@ def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_ge
 #Delete Student Data        
 @app.delete("/student/{id}")
 def delete_student(
-    id: int, curent_user:  dict = Depends(auth.get_curent_user),
+    id: int, curent_user: dict = Depends(auth.require_admin),
    db: Session = Depends(db_get)
 ):
-    # condtion check for curent user role
-    if curent_user["role"] != "user":
-            raise HTTPException(
-                status_code=403,
-                detail="Access Denied"
-            )
-             
+            
     students = db.query(model.Student).filter(
         model.Student.id == id
     ).first()

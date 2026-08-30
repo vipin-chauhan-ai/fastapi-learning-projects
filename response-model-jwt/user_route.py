@@ -73,26 +73,13 @@ def profile(curent_user:str= Depends(auth.get_curent_user),):
     return {
         "curent_user" :curent_user
     }
-    
-# GET refresh Token    
-@router.post("/refresh")
-def refresh_token(
-    request: RefreshTokenRequest
-):
-    email = auth.verify_token(
-        request.refresh_token,
-        "refresh"
-    )
 
-    new_access_token = auth.create_access_token(
-        data={
-            "sub": email,
-            "type": "access"
-        }
-    )
-
-    return {
-        "message": "New Access Token Generated",
+@router.post("/refresh_token")
+def refresh_token(request:RefreshTokenRequest):
+    email = auth.verfiy_token(request.refresh_token,"refresh")    
+    new_access_token = auth.create_refresh_token(data={"sub":email,"type":"access"})
+    return{
+        "message": "new access token genrate",
         "access_token": new_access_token,
-        "token_type": "bearer"
+        "token_type" : "bearer"
     }
