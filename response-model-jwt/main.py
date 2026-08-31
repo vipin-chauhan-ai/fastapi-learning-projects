@@ -3,15 +3,17 @@ from database import engine,Base,SessionLocal
 import model,schemas
 from sqlalchemy.orm import Session
 #Import User Router
-
 from user_route import router
-#import auth
+#Import File Router
+from file_route import router as file_router
 import auth
 app = FastAPI()
 Base.metadata.create_all(bind = engine)
 #Include User Router
 app.include_router(router)
 
+#Include file Router
+app.include_router(file_router)
 
 def db_get():
     db = SessionLocal()
@@ -87,13 +89,21 @@ def update_student(id:int,student:schemas.CreateStudent,db:Session=Depends(db_ge
 #Delete Student Data        
 @app.delete("/student/{id}")
 def delete_student(
-    id: int, curent_user: dict = Depends(auth.require_admin),
-   db: Session = Depends(db_get)
+    id: int,
+    curent_user:dict = Depends(auth.require_admin),
+    db: Session = Depends(db_get)
 ):
-            
+
+             
     students = db.query(model.Student).filter(
         model.Student.id == id
     ).first()
+
+    if students is None:
+        raise HTTPException(
+            status_code=404,
+            detail="student not found"
+        )
 
     db.delete(students)
     db.commit()
