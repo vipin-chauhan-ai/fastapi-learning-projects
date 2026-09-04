@@ -49,13 +49,25 @@ def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
  # Get Student Data From Database  
 
 @app.get("/student")
-def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Query(10,ge=1,le=100),):
+def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Query(10,ge=1,le=100),serach:str= Query(None),):
     
     offset = (page-1)*limit
     query = db.query(model.Student)
     #GET ALL STUDENT DATA           
-    students = query.offset(offset).limit(limit).all()
-    total_records =query.count()    
+    #students = query.offset(offset).limit(limit).all()
+    query = db.query(model.Student)
+
+    total_records =query.count()  
+    #Search
+    if serach:
+            query= query.filter(
+                or_(
+                    model.Student.name.ilike(f"%{serach}%"),
+                    model.Student.course.ilike(f"%{serach}%"),
+                )
+            ) 
+     #GET ALL STUDENT DATA           
+    students = query.offset(offset).limit(limit).all()   
     if students is None:
         raise HTTPException(status_code=404,
                              detail="student not found"
