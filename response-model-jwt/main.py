@@ -1,7 +1,8 @@
-from fastapi import FastAPI,Depends,HTTPException
+from fastapi import FastAPI,Depends,HTTPException,Query
 from database import engine,Base,SessionLocal
 import model,schemas
 from sqlalchemy.orm import Session
+from sqlalchemy import or_,asc,desc
 #Import User Router
 from user_route import router
 #Import File Router
@@ -23,8 +24,7 @@ def db_get():
         db.close()
         
 # Post Student Data
-
-@app.post("/student",response_model=schemas.StudentResponse)
+@app.post("/student",response_model=schemas.StduentPostResponse)
 def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
     new_student = model.Student(
         name = student.name,
@@ -45,23 +45,26 @@ def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
     }
     }
     
+    
  # Get Student Data From Database  
 
 @app.get("/student")
-def get_student(db:Session=Depends(db_get)):
-    students = db.query(model.Student).all()  #select * from table_name 
-    # students = db.query(model.Student).filter(model.Student.id==1).all()
-    # students = db.query(model.Student.name,model.Student.course).filter(model.Student.id==2).first()
+def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Query(10,ge=1,le=100),):
+    
+    offset = (page-1)*limit
+    query = db.query(model.Student)
+    #GET ALL STUDENT DATA           
+    students = query.offset(offset).limit(limit).all()
+    total_records =query.count()    
     if students is None:
         raise HTTPException(status_code=404,
                              detail="student not found"
                              )
     return{
         "message" :"Student info",
-        # "student" : {
-        #              "Name" : students.name,
-        #              "Course" : students.course,
-        #              }
+        "page":page,
+        "limit" : limit,
+        "total_records" : total_records,
         "students" :students
     } 
     
