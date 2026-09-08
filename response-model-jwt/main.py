@@ -3,12 +3,25 @@ from database import engine,Base,SessionLocal
 import model,schemas
 from sqlalchemy.orm import Session
 from sqlalchemy import or_,asc,desc
+#Middleware
+from fastapi.middleware.cors import CORSMiddleware
+
 #Import User Router
 from user_route import router
 #Import File Router
 from file_route import router as file_router
 import auth
 app = FastAPI()
+
+#Cors
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://127.0.0.1:5500'],
+    allow_credentials=True,
+    allow_headers=["*"],
+    allow_methods=["*"]
+)
+
 Base.metadata.create_all(bind = engine)
 #Include User Router
 app.include_router(router)
@@ -24,6 +37,7 @@ def db_get():
         db.close()
         
 # Post Student Data
+
 @app.post("/student",response_model=schemas.StduentPostResponse)
 def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
     new_student = model.Student(
@@ -45,16 +59,16 @@ def create_student(student:schemas.CreateStudent,db:Session=Depends(db_get)):
     }
     }
     
-    
  # Get Student Data From Database  
 
-@app.get("/student")
-def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Query(10,ge=1,le=100),serach:str= Query(None),age:int=Query(None),course:str= Query(None),sort:str=Query(None)):
-     offset = (page-1)*limit
+@app.get("/student",response_model=schemas.StudentListingResponse)
+def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Query(10,ge=1,le=100),
+                serach:str= Query(None),age:int=Query(None),course:str= Query(None),sort:str=Query(None)):
+    offset = (page-1)*limit
 
-     query = db.query(model.Student)
+    query = db.query(model.Student)
    #Search
-     if serach:
+    if serach:
         query= query.filter(
             or_(
                 model.Student.name.ilike(f"%{serach}%"),
@@ -62,23 +76,23 @@ def get_student(db:Session=Depends(db_get),page:int= Query(1,ge=1),limit:int= Qu
             )
         )
     #Filter
-     if age:
+    if age:
         query = query.filter(model.Student.age==age)
-     if course:
+    if course:
         query = query.filter(model.Student.course==course)   
     #SORTING
-     if sort=="asc":
+    if sort=="asc":
         query = query.order_by(asc(model.Student.name))
-     elif sort=="desc":
+    elif sort=="desc":
             query = query.order_by(desc(model.Student.name))  
     #GET ALL STUDENT DATA           
-     students = query.offset(offset).limit(limit).all()  
-     total_records =query.count()    
-     if students is None:
+    students = query.offset(offset).limit(limit).all()  
+    total_records =query.count()    
+    if students is None:
         raise HTTPException(status_code=404,
                              detail="student not found"
                              )
-     return{
+    return{
         "message" :"Student info",
         "page":page,
         "limit" : limit,
