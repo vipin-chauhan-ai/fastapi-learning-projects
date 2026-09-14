@@ -1,9 +1,11 @@
-from fastapi import APIRouter,Depends,HTTPException
+from fastapi import APIRouter,Depends,HTTPException,BackgroundTasks
 from database import SessionLocal
 from user_schemas import CreateUser,UserLogin,RefreshTokenRequest
 from user_model import User
 from sqlalchemy.orm import Session
 import auth
+# get email route here
+from email_route import send_email_service
 
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -15,7 +17,7 @@ def db_get():
     finally:
         db.close()
 @router.post("/registration")
-def user_registration(user:CreateUser,db:Session=Depends(db_get)):
+async  def user_registration(user:CreateUser,background_tasks:BackgroundTasks,db:Session=Depends(db_get)):
     email_exist = db.query(User).filter(User.email == user.email).first()
     if email_exist:
         raise HTTPException(
@@ -28,11 +30,27 @@ def user_registration(user:CreateUser,db:Session=Depends(db_get)):
         email = user.email,
         password = has_pass,
         age = user.age,
-        course = user.course
+        course = user.course,
+        role="user"
     )
     db.add(new_user)
+    background_tasks.add_task(send_email_service,new_user.email,
+                              "Wellcome to Fast APi",
+                              f""" 
+                              Hello {new_user.name}
+                              Your registration has been successfully completed !
+                              wellcome to fast API
+                              
+                              Thank You!
+                              """
+                              )
     db.commit()
     db.refresh(new_user)
+    
+ 
+        
+        
+        
     return{
         "User" :"User Create Successfully",
         "User ID" : new_user.id,
