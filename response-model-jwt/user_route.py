@@ -47,10 +47,7 @@ async  def user_registration(user:CreateUser,background_tasks:BackgroundTasks,db
     db.commit()
     db.refresh(new_user)
     
- 
-        
-        
-        
+    
     return{
         "User" :"User Create Successfully",
         "User ID" : new_user.id,
